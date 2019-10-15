@@ -28,7 +28,7 @@ class Images(commands.Cog):
                 if resp.status == 403:
                     return "Limit exceeded"
                 data = await resp.json()
-                image_url = data["items"][0]["link"]
+                image_url = data[0]["link"]
                 # TODO: Check if response is not empty?
                 embed = discord.Embed(
                     title=f"{search_arg}".capitalize(), image=image_url
