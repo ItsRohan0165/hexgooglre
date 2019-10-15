@@ -6,7 +6,7 @@ from discord.ext import commands
 import settings
 
 
-initial_extensions = ["modules.image", "modules.fortnite"]
+initial_extensions = ["modules.image"]
 TOKEN = os.getenv("TOKEN")
 bot = commands.Bot(command_prefix="-")
 
