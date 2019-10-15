@@ -11,30 +11,36 @@ class Images(commands.Cog):
         self.bot = bot
 
     @commands.command(name="image")
-    async def image(self, ctx, search_arg):
+    async def google_image(self, ctx, *, search_param: str = 'cat'):
+        """Returns first result of Google Image Search."""
+        gis = GoogleImagesSearch(os.getenv("API"), os.getenv("CSE"))
 
-        """Searches for a image related to the search arg """
-        url = "https://www.googleapis.com/customsearch/v1"
-        params = {
-            "key": os.getenv("API"),
-            "cx": os.getenv("CSE"),
-            "searchType": "image",
-            "q": search_arg,
-            "num": 1,
-            "safe": "active",
-        }
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as resp:
-                if resp.status == 403:
-                    return "Limit exceeded"
-                data = await resp.json()
-                image_url = data["link"]
-                # TODO: Check if response is not empty?
-                embed = discord.Embed(
-                    title=f"{search_arg}".capitalize(), image=image_url
-                ).set_image(url=image_url)
+        safe = 'off' if ctx.message.guild is not None and ctx.channel.is_nsfw() else 'high'
 
-                await ctx.send(embed=embed)
+        _search_params = {'q': search_param,
+                          'num': 1,
+                          'searchType': 'image',
+                          'safe': safe}
+
+        try:
+            gis.search(_search_params)
+        except:
+            return await ctx.send(
+                'Google Error: Please try again or use another search term.\n'
+                'If this error persists, it means my daily search limit has been reached and cannot '
+                'search anymore due to Google\'s restrictions... \n'
+                'Sorry, please try again tomorrow. \U0001f626')
+
+        if gis.results():
+            image_url = gis.results()[0].url
+        else:
+            return await ctx.send(f'Error: Image search for `{search_param}` failed.')
+
+        e = discord.Embed(colour=discord.Colour.green())
+        e.set_image(url=image_url)
+        e.set_footer(text=f'Google Image Search for: {search_param} — Safe Search: {safe}')
+
+        await ctx.send(embed=e)
 
 
 def setup(bot):
